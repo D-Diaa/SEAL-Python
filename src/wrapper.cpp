@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/iostream.h>
 #include <pybind11/complex.h>
 #include "seal/seal.h"
 
@@ -295,6 +296,13 @@ PYBIND11_MODULE(seal, m)
 		.def("to_string", &Plaintext::to_string)
 		.def("coeff_count", &Plaintext::coeff_count)
 		.def("save", (void (Plaintext::*)(std::ostream &)) & Plaintext::save)
+		.def("save_str", [](Plaintext &pt){
+            std::stringstream ss;
+            std::ostringstream oss;
+		    pt.save(ss);
+		    oss << ss.rdbuf();
+		    return py::bytes(oss.str());
+		})
 		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) & Plaintext::load)
 		.def("scale", (double &(Plaintext::*)()) & Plaintext::scale)
 		.def("parms_id", (parms_id_type & (Plaintext::*)()) & Plaintext::parms_id, py::return_value_policy::reference);
