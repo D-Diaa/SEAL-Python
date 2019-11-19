@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
 #include <pybind11/complex.h>
+#include <pybind11/numpy.h>
 #include "seal/seal.h"
 
 namespace py = pybind11;
@@ -77,8 +78,23 @@ PYBIND11_MODULE(seal, m)
 			 py::keep_alive<0, 1>());
 
 	// uIntVector
-	py::class_<uIntVector>(m, "uIntVector")
+	py::class_<uIntVector>(m, "uIntVector", py::buffer_protocol())
+        .def_buffer([](uIntVector &v) -> py::buffer_info {
+            return py::buffer_info(
+                v.data(),                                      /* Pointer to buffer */
+                sizeof(std::uint64_t),                          /* Size of one scalar */
+                py::format_descriptor<std::uint64_t>::format(), /* Python struct-style format descriptor */
+                1,                                              /* Number of dimensions */
+                { v.size() },                           /* Buffer dimensions */
+                { sizeof(std::uint64_t) }                       /* Strides (in bytes) for each index */
+            );
+        })
 		.def(py::init<>())
+//		.def("data", [](uIntVector& v) {
+////            auto capsule = py::capsule(&v, [](void* p) { delete reinterpret_cast<uIntVector*>(p); });
+////            return py::array(v.size(), v.data(), capsule);
+//		})
+		.def("resize", (void (uIntVector::*)(const size_type)) & &uIntVector::resize)
 		.def("pop_back", &uIntVector::pop_back)
 		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
 		.def("back", (std::uint64_t & (uIntVector::*)()) & uIntVector::back)
