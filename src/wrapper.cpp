@@ -298,12 +298,14 @@ PYBIND11_MODULE(seal, m)
 		.def("save", (void (Plaintext::*)(std::ostream &)) & Plaintext::save)
 		.def("save_str", [](Plaintext &pt){
             std::stringstream ss;
-            std::ostringstream oss;
 		    pt.save(ss);
-		    oss << ss.rdbuf();
-		    return py::bytes(oss.str());
+		    return py::bytes(ss.rdbuf()->str());
 		})
 		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) & Plaintext::load)
+		.def("load_str", [](Plaintext &pt, std::shared_ptr<SEALContext> context, std::string& str){
+            std::istringstream iss(str);
+		    pt.load(context, iss);
+		})
 		.def("scale", (double &(Plaintext::*)()) & Plaintext::scale)
 		.def("parms_id", (parms_id_type & (Plaintext::*)()) & Plaintext::parms_id, py::return_value_policy::reference);
 
