@@ -10,6 +10,7 @@ using namespace std;
 using namespace seal;
 
 using pt_coeff_type = std::uint64_t;
+using ct_coeff_type = std::uint64_t;
 using size_type = IntArray<pt_coeff_type>::size_type;
 
 PYBIND11_MAKE_OPAQUE(std::vector<double>);
@@ -273,7 +274,17 @@ PYBIND11_MODULE(seal, m)
 		// .def(py::init<>())
 
 	// Ciphertext
-	py::class_<Ciphertext>(m, "Ciphertext")
+	py::class_<Ciphertext>(m, "Ciphertext", py::buffer_protocol())
+        .def_buffer([](Ciphertext &ct) -> py::buffer_info {
+            return py::buffer_info(
+                ct.data(),                                      /* Pointer to buffer */
+                sizeof(ct_coeff_type),                          /* Size of one scalar */
+                py::format_descriptor<ct_coeff_type>::format(), /* Python struct-style format descriptor */
+                1,                                              /* Number of dimensions */
+                { ct.uint64_count() },
+                { sizeof(ct_coeff_type) }
+            );
+        })
 		.def(py::init<>())
 		.def(py::init<std::shared_ptr<SEALContext>>())
 		.def(py::init<std::shared_ptr<SEALContext>, parms_id_type>())
@@ -294,7 +305,6 @@ PYBIND11_MODULE(seal, m)
                 1,                                              /* Number of dimensions */
                 { pt.coeff_count() },                           /* Buffer dimensions */
                 { sizeof(pt_coeff_type) }                       /* Strides (in bytes) for each index */
-
             );
         })
 		.def(py::init<>())
