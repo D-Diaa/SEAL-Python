@@ -231,6 +231,7 @@ PYBIND11_MODULE(seal, m)
 	// PublicKey
 	py::class_<PublicKey>(m, "PublicKey")
 		.def(py::init<>())
+		.def("data", (Ciphertext & (PublicKey::*)()) & PublicKey::data)
 		.def("parms_id", (parms_id_type & (PublicKey::*)()) & PublicKey::parms_id, py::return_value_policy::reference)
 		.def("save", (void (PublicKey::*)(std::ostream &)) & PublicKey::save)
 		.def("load", (void (PublicKey::*)(std::shared_ptr<SEALContext>, std::istream &)) & PublicKey::load);
