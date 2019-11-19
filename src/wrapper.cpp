@@ -223,6 +223,7 @@ PYBIND11_MODULE(seal, m)
 	// SecretKey
 	py::class_<SecretKey>(m, "SecretKey")
 		.def(py::init<>())
+		.def("data", (Plaintext & (SecretKey::*)()) & SecretKey::data)
 		.def("parms_id", (parms_id_type & (SecretKey::*)()) & SecretKey::parms_id, py::return_value_policy::reference)
 		.def("save", (void (SecretKey::*)(std::ostream &)) & SecretKey::save)
 		.def("load", (void (SecretKey::*)(std::shared_ptr<SEALContext>, std::istream &)) & SecretKey::load);
