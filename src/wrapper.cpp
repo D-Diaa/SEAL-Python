@@ -285,7 +285,18 @@ PYBIND11_MODULE(seal, m)
 		.def("parms_id", (parms_id_type & (Ciphertext::*)()) & Ciphertext::parms_id, py::return_value_policy::reference);
 
 	// Plaintext
-	py::class_<Plaintext>(m, "Plaintext")
+	py::class_<Plaintext>(m, "Plaintext", py::buffer_protocol())
+        .def_buffer([](Plaintext &pt) -> py::buffer_info {
+            return py::buffer_info(
+                pt.data(),                                      /* Pointer to buffer */
+                sizeof(pt_coeff_type),                          /* Size of one scalar */
+                py::format_descriptor<pt_coeff_type>::format(), /* Python struct-style format descriptor */
+                1,                                              /* Number of dimensions */
+                { pt.coeff_count() },                           /* Buffer dimensions */
+                { sizeof(pt_coeff_type) }                       /* Strides (in bytes) for each index */
+
+            );
+        })
 		.def(py::init<>())
 		.def(py::init<size_type>())
 		.def(py::init<size_type, size_type>())
