@@ -24,35 +24,6 @@ using ComplexDoubleVector = std::vector<std::complex<double>>;
 using uIntVector = std::vector<std::uint64_t>;
 using IntVector = std::vector<std::int64_t>;
 
-template <typename T>
-class PreAllocator {
-    private:
-        T* memory_ptr;
-        std::size_t memory_size;
-
-    public:
-        typedef std::size_t     size_type;
-        typedef T*              pointer;
-        typedef T               value_type;
-
-        PreAllocator(T* memory_ptr, std::size_t memory_size) : memory_ptr(memory_ptr), memory_size(memory_size) {}
-
-        PreAllocator(const PreAllocator& other) throw() : memory_ptr(other.memory_ptr), memory_size(other.memory_size) {};
-
-        template<typename U>
-        PreAllocator(const PreAllocator<U>& other) throw() : memory_ptr(other.memory_ptr), memory_size(other.memory_size) {};
-
-        template<typename U>
-        PreAllocator& operator = (const PreAllocator<U>& other) { return *this; }
-        PreAllocator<T>& operator = (const PreAllocator& other) { return *this; }
-        ~PreAllocator() {}
-
-
-        pointer allocate(size_type n, const void* hint = 0) {return memory_ptr;}
-        void deallocate(T* ptr, size_type n) {}
-
-        size_type max_size() const {return memory_size;}
-};
 
 PYBIND11_MODULE(seal, m)
 {
@@ -468,20 +439,6 @@ PYBIND11_MODULE(seal, m)
             v.assign(reinterpret_cast<std::uint64_t*>(info.ptr), reinterpret_cast<std::uint64_t*>(info.ptr) + num_elem);
             encoder.encode(v, pt);
 		})
-//		.def("decode_uint", [](BatchEncoder &encoder, Plaintext & pt, py::buffer b){
-//            py::buffer_info info = b.request();
-//            size_t num_elem = info.shape[0];
-//            if (num_elem != 1024 && num_elem != 2048) {
-//                throw std::length_error("The length has to be 1024 or 2048");
-//            }
-////            uIntVector v;
-//            std::vector<std::uint64_t, PreAllocator<std::uint64_t>> v(0, PreAllocator<std::uint64_t>(&reinterpret_cast<std::uint64_t*>(info.ptr)[0], num_elem));
-////            v.assign(reinterpret_cast<std::uint64_t*>(info.ptr), reinterpret_cast<std::uint64_t*>(info.ptr) + num_elem);
-//            printf("info.ptr: %p\n", reinterpret_cast<std::uint64_t*>(info.ptr));
-//            printf("before %p, value[5]: %u\n", v.data(), v[5]);
-//            encoder.decode(pt, v);
-//            printf("after %p, value[5]: %u\n", v.data(), v[5]);
-//		})
 		.def("encode", (void (BatchEncoder::*)(const uIntVector &, Plaintext &)) & BatchEncoder::encode)
 		.def("encode", (void (BatchEncoder::*)(const IntVector &, Plaintext &)) & BatchEncoder::encode)
 		.def("decode", (void (BatchEncoder::*)(const Plaintext &, uIntVector &, MemoryPoolHandle)) & BatchEncoder::decode, py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
