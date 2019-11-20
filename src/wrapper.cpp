@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
 #include <pybind11/complex.h>
-#include <pybind11/numpy.h>
+#include <stdexcept>
 #include "seal/seal.h"
 
 namespace py = pybind11;
@@ -89,11 +89,12 @@ PYBIND11_MODULE(seal, m)
                 { sizeof(std::uint64_t) }                       /* Strides (in bytes) for each index */
             );
         })
+		.def("from_np", [](uIntVector &v, py::buffer b){
+            py::buffer_info info = b.request();
+            size_t num_elem = info.shape[0];
+            v.assign(reinterpret_cast<std::uint64_t*>(info.ptr), reinterpret_cast<std::uint64_t*>(info.ptr) + num_elem);
+		})
 		.def(py::init<>())
-//		.def("data", [](uIntVector& v) {
-////            auto capsule = py::capsule(&v, [](void* p) { delete reinterpret_cast<uIntVector*>(p); });
-////            return py::array(v.size(), v.data(), capsule);
-//		})
 		.def("resize", (void (uIntVector::*)(const size_type)) & &uIntVector::resize)
 		.def("pop_back", &uIntVector::pop_back)
 		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
@@ -425,8 +426,18 @@ PYBIND11_MODULE(seal, m)
 		.def("decode_int32", (std::int32_t(IntegerEncoder::*)(const Plaintext &)) & IntegerEncoder::decode_int32);
 
 	// BatchEncoder
-	py::class_<BatchEncoder>(m, "BatchEncoder")
+	py::class_<BatchEncoder>(m, "BatchEncoder", py::buffer_protocol())
 		.def(py::init<std::shared_ptr<SEALContext>>())
+		.def("encode_uint", [](BatchEncoder &encoder, py::buffer b, Plaintext & pt){
+            py::buffer_info info = b.request();
+            size_t num_elem = info.shape[0];
+            if(num_elem != 1024 and num_elem != 2048) {
+                throw std::length_error("The length has to be 1024 or 2048");
+            }
+            uIntVector v;
+            v.assign(reinterpret_cast<std::uint64_t*>(info.ptr), reinterpret_cast<std::uint64_t*>(info.ptr) + num_elem);
+            encoder.encode(v, pt);
+		})
 		.def("encode", (void (BatchEncoder::*)(const uIntVector &, Plaintext &)) & BatchEncoder::encode)
 		.def("encode", (void (BatchEncoder::*)(const IntVector &, Plaintext &)) & BatchEncoder::encode)
 		.def("decode", (void (BatchEncoder::*)(const Plaintext &, uIntVector &, MemoryPoolHandle)) & BatchEncoder::decode, py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
