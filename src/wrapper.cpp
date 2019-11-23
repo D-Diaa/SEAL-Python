@@ -247,7 +247,18 @@ PYBIND11_MODULE(seal, m)
 		.def("load", (void (SecretKey::*)(std::shared_ptr<SEALContext>, std::istream &)) & SecretKey::load);
 
 	// PublicKey
-	py::class_<PublicKey>(m, "PublicKey")
+	py::class_<PublicKey>(m, "PublicKey", py::buffer_protocol())
+        .def_buffer([](PublicKey &pk) -> py::buffer_info {
+            auto& ct = pk.data();
+            return py::buffer_info(
+                ct.data(),                                      /* Pointer to buffer */
+                sizeof(ct_coeff_type),                          /* Size of one scalar */
+                py::format_descriptor<ct_coeff_type>::format(), /* Python struct-style format descriptor */
+                1,                                              /* Number of dimensions */
+                { ct.uint64_count() },
+                { sizeof(ct_coeff_type) }
+            );
+        })
 		.def(py::init<>())
 		.def("data", (Ciphertext & (PublicKey::*)()) & PublicKey::data)
 		.def("parms_id", (parms_id_type & (PublicKey::*)()) & PublicKey::parms_id, py::return_value_policy::reference)
