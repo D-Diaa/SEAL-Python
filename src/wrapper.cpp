@@ -239,7 +239,18 @@ PYBIND11_MODULE(seal, m)
 			 [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return PlainModulus::Batching(poly_modulus_degree, bit_sizes); });
 
 	// SecretKey
-	py::class_<SecretKey>(m, "SecretKey")
+	py::class_<SecretKey>(m, "SecretKey", py::buffer_protocol())
+        .def_buffer([](SecretKey &sk) -> py::buffer_info {
+            auto& pt = sk.data();
+            return py::buffer_info(
+                pt.data(),                                      /* Pointer to buffer */
+                sizeof(pt_coeff_type),                          /* Size of one scalar */
+                py::format_descriptor<pt_coeff_type>::format(), /* Python struct-style format descriptor */
+                1,                                              /* Number of dimensions */
+                { pt.coeff_count() },                           /* Buffer dimensions */
+                { sizeof(pt_coeff_type) }                       /* Strides (in bytes) for each index */
+            );
+        })
 		.def(py::init<>())
 		.def("data", (Plaintext & (SecretKey::*)()) & SecretKey::data)
 		.def("parms_id", (parms_id_type & (SecretKey::*)()) & SecretKey::parms_id, py::return_value_policy::reference)
