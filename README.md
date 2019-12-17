@@ -51,9 +51,12 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   ```
   cd src
+  conda activate seal_python
   pip3 install -r requirements.txt
   
-  python3 setup.py build_ext -i
+  export CC='/usr/bin/gcc-8'
+  export CXX='/usr/bin/g++-8'
+  python3 setup.py install
   ```
 
 * ### Others
