@@ -21,7 +21,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-  `sudo apt-get update && sudo apt-get install g++ make git python3 python3-dev python3.6-pip`
+  `sudo apt-get update && sudo apt-get install -y g++ make git gcc-8 g++-8`
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
@@ -52,11 +52,11 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
   ```
   cd src
   conda activate seal_python
-  pip3 install -r requirements.txt
+  pip install -r requirements.txt
   
   export CC='/usr/bin/gcc-8'
   export CXX='/usr/bin/g++-8'
-  python3 setup.py install
+  python setup.py install
   ```
 
 * ### Others
