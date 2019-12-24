@@ -25,7 +25,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
-  We highly recommend you to install SEAL-Python in a Anaconda's virtual environment.
+  We highly recommend you to install SEAL-Python in a [Anaconda](https://www.anaconda.com/) virtual environment.
 
 * ### SEAL 3.3.2
 
