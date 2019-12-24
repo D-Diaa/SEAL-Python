@@ -25,6 +25,8 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
+  We highly recommend you to install SEAL-Python in a Anaconda's virtual environment.
+
 * ### SEAL 3.3.2
 
   ```shell
@@ -36,22 +38,12 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 * ### pybind11
 
-  ```
-  pip3 install pytest
-  
-  cd pybind11
-  mkdir build
-  cd build
-  cmake ..
-  make check -j 4
-  sudo make install # or not
-  ```
+        conda  install pybind11
   
 * ### SEAL-Python
 
   ```
   cd src
-  conda activate seal_python
   pip install -r requirements.txt
   
   export CC='/usr/bin/gcc-8'
