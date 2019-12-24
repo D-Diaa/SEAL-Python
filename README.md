@@ -38,7 +38,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 * ### pybind11
 
-    conda install pybind11
+    ```conda install pybind11```
   
 * ### SEAL-Python
 
