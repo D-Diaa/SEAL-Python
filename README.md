@@ -79,7 +79,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 `cd tests`
 
-`python3 [example_name].py`
+`python [example_name].py`
 
 * The `.so` file need in the same folder, or you had `make install` it already.
 
@@ -96,20 +96,4 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 | 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Finished |
 | 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Finished |
 
-
-
-## About
-
-This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
-
-Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
-
-If you are interested, come and join us.
-
-Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
-
-
-
-## Contributing
-* Instructor: [Dr. Chen](http://blog.sciencenet.cn/u/chzg99)
 
