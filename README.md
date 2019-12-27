@@ -23,7 +23,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   `sudo apt-get update && sudo apt-get install -y g++ make git gcc-8 g++-8`
 
-  `git clone https://github.com/Huelse/SEAL-Python.git`
+  `git clone https://github.com/Lucieno/SEAL-Python.git`
 
   We highly recommend you to install SEAL-Python in a [Anaconda](https://www.anaconda.com/) virtual environment.
 
