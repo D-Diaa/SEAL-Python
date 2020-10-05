@@ -1777,10 +1777,8 @@ namespace seal
                         {
                             noise_elem = multiply_uint_uint_mod(noise_elem, multi_rand[k], coeff_modulus[j]);
                         }
-                        // noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
-                        *(poly + i + (j * coeff_count)) = add_uint_uint_mod(
-                            *(poly + i + (j * coeff_count)),
-                            noise_elem, coeff_modulus[j]);
+                        noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
+                        *(poly + i + (j * coeff_count)) = add_uint_uint_mod( *(poly + i + (j * coeff_count)), noise_elem, coeff_modulus[j]);
                     }
                 }
             }

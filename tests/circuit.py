@@ -8,8 +8,13 @@ from seal_helper import *
 def rand_int():
     return int(random.random()*(10**10))
 
+def get_rt(qs, t):
+    res = 1
+    for x in map(lambda x: x.value(), qs):
+        res *= x
+    return math.log2(res % t)
 
-def bfv_performance_test(context, noise_bit=151):
+def bfv_performance_test(context, noise_bit=350):
     print_parameters(context)
 
     parms = context.first_context_data().parms()
@@ -155,11 +160,17 @@ def example_bfv_performance_default():
 
     print()
     poly_modulus_degree = 8192
+    poly_modulus_degree = 16384
+    t = 65537
+    # t = 786433
+    print("r_t(q) bit: ", get_rt(CoeffModulus.BFVDefault(poly_modulus_degree), t))
+    print("plaintext bit: ", math.log2(t))
     parms.set_poly_modulus_degree(poly_modulus_degree)
     parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
     # parms.set_plain_modulus(786433)
-    parms.set_plain_modulus(65537)
+    parms.set_plain_modulus(t)
     bfv_performance_test(SEALContext.Create(parms))
+    print()
 
     # print()
     # poly_modulus_degree = 16384
