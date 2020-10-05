@@ -7,6 +7,7 @@
 #include <limits>
 #include <functional>
 #include "seal/evaluator.h"
+#include "seal/randomtostd.h"
 #include "seal/util/common.h"
 #include "seal/util/uintarith.h"
 #include "seal/util/polycore.h"
@@ -1674,6 +1675,127 @@ namespace seal
         // Create a vector of copies of encrypted
         vector<Ciphertext> exp_vector(exponent, encrypted);
         multiply_many(exp_vector, relin_keys, encrypted, move(pool));
+    }
+
+    void Evaluator::add_noise(Ciphertext &encrypted, const int noise_bit)
+    {
+        // Verify parameters.
+        if (!is_metadata_valid_for(encrypted, context_))
+        {
+            throw invalid_argument("encrypted is not valid for encryption parameters");
+        }
+
+        auto &context_data = *context_->get_context_data(encrypted.parms_id());
+        auto &parms = context_data.parms();
+        if (parms.scheme() == scheme_type::BFV && encrypted.is_ntt_form())
+        {
+            throw invalid_argument("BFV encrypted cannot be in NTT form");
+        }
+        if (parms.scheme() == scheme_type::CKKS && !encrypted.is_ntt_form())
+        {
+            throw invalid_argument("CKKS encrypted must be in NTT form");
+        }
+
+        // Extract encryption parameters.
+        auto &coeff_modulus = parms.coeff_modulus();
+        size_t coeff_count = parms.poly_modulus_degree();
+        size_t coeff_mod_count = coeff_modulus.size();
+
+        shared_ptr<UniformRandomGenerator> random(parms.random_generator()->create());
+
+        // Size check
+        if (!product_fits_in(coeff_count, coeff_mod_count))
+        {
+            throw logic_error("invalid parameters");
+        }
+
+        switch (parms.scheme())
+        {
+        case scheme_type::BFV:
+        {
+            auto coeff_div_plain_modulus = context_data.coeff_div_plain_modulus();
+            auto plain_upper_half_threshold = context_data.plain_upper_half_threshold();
+            auto upper_half_increment = context_data.upper_half_increment();
+
+            RandomToStandardAdapter engine(random);
+            constexpr uint64_t max_random = static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL);
+            const size_t each_pack_bit = 63;
+
+            size_t n_rand = (noise_bit - 1) / 63 + 1;
+            int last_bit = noise_bit % 63;
+            int mid_bit = noise_bit - 1;
+            size_t last_pack_bit = mid_bit % each_pack_bit;
+
+            uint64_t rand;
+
+            cout << "noise_bit: " << noise_bit << endl;
+
+            vector<uint64_t> multi_mid;
+
+            for (size_t j = 0; j < coeff_mod_count; j++) {
+                uint64_t mid = 1;
+                for (size_t k = 0; k < (mid_bit - 1) / each_pack_bit + 1; k++) 
+                {
+                    uint64_t temp = static_cast<uint64_t>(1) << each_pack_bit;
+                    // temp -= barrett_reduce_64(temp, coeff_modulus[j]);
+                    // temp %= coeff_modulus[j]
+                    mid = multiply_uint_uint_mod(mid, temp, coeff_modulus[j]);
+                    // be neg
+                    mid = coeff_modulus[j].value() - mid;
+                }
+                multi_mid.push_back(mid);
+            }
+
+            for (size_t i = 0; i < coeff_count; i++)
+            {
+                vector<uint64_t> multi_rand;
+
+                // normal case
+                for (size_t j = 0; j < n_rand - 1; j++) 
+                {
+                    rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
+                    multi_rand.push_back(rand);
+                }
+                // corner case
+                uint64_t max_last_noise = static_cast<uint64_t>(1) << last_bit;
+                do
+                {
+                    rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
+                    rand &= (static_cast<uint64_t>(1) << last_bit) - 1;
+                } while (rand >= max_last_noise);
+                multi_rand.push_back(rand);
+
+                for (size_t j = 0; j < coeff_mod_count; j++)
+                {
+                    uint64_t noise_elem = 1;
+                    for (size_t k = 0; k < n_rand; k++) 
+                    {
+                        noise_elem = multiply_uint_uint_mod(noise_elem, multi_rand[k], coeff_modulus[j]);
+                    }
+                    // noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
+                    *(encrypted.data() + i + (j * coeff_count)) = add_uint_uint_mod(
+                        *(encrypted.data() + i + (j * coeff_count)),
+                        noise_elem, coeff_modulus[j]);
+                }
+            }
+            break;
+        }
+
+        case scheme_type::CKKS:
+        {
+            throw invalid_argument("unsupported scheme");
+        }
+
+        default:
+            throw invalid_argument("unsupported scheme");
+        }
+#ifdef SEAL_THROW_ON_TRANSPARENT_CIPHERTEXT
+        // Transparent ciphertext output is not allowed.
+        if (encrypted.is_transparent())
+        {
+            throw logic_error("result ciphertext is transparent");
+        }
+#endif
     }
 
     void Evaluator::add_plain_inplace(Ciphertext &encrypted, const Plaintext &plain)

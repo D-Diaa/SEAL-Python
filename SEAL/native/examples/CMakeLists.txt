@@ -19,6 +19,8 @@ target_sources(sealexamples
         6_performance.cpp
 )
 
+add_executable(sealexamples 7_circuit_privacy.cpp)
+
 # Import Microsoft SEAL
 find_package(SEAL 3.3.1 EXACT REQUIRED)
 

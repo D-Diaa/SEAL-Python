@@ -728,6 +728,8 @@ namespace seal
             exponentiate_inplace(destination, exponent, relin_keys, std::move(pool));
         }
 
+        void add_noise(Ciphertext &encrypted, const int noise_bit);
+
         /**
         Adds a ciphertext and a plaintext. The plaintext must be valid for the current
         encryption parameters.
