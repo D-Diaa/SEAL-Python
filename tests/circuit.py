@@ -9,7 +9,7 @@ def rand_int():
     return int(random.random()*(10**10))
 
 
-def bfv_performance_test(context):
+def bfv_performance_test(context, noise_bit=151):
     print_parameters(context)
 
     parms = context.first_context_data().parms()
@@ -106,7 +106,7 @@ def bfv_performance_test(context):
 
         "add noise"
         time_start = time.time()
-        evaluator.add_noise(encrypted, 30)
+        evaluator.add_noise(encrypted, noise_bit)
         time_end = time.time()
         time_add_noise_sum += (time_end-time_start)*1000000
 
@@ -146,25 +146,27 @@ def example_bfv_performance_default():
         "BFV Performance Test with Degrees: 4096, 8192, and 16384")
 
     parms = EncryptionParameters(scheme_type.BFV)
-    poly_modulus_degree = 4096
-    parms.set_poly_modulus_degree(poly_modulus_degree)
-    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
-    parms.set_plain_modulus(786433)
-    bfv_performance_test(SEALContext.Create(parms))
+
+    # poly_modulus_degree = 4096
+    # parms.set_poly_modulus_degree(poly_modulus_degree)
+    # parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    # parms.set_plain_modulus(786433)
+    # bfv_performance_test(SEALContext.Create(parms))
 
     print()
     poly_modulus_degree = 8192
     parms.set_poly_modulus_degree(poly_modulus_degree)
     parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
-    parms.set_plain_modulus(786433)
+    # parms.set_plain_modulus(786433)
+    parms.set_plain_modulus(65537)
     bfv_performance_test(SEALContext.Create(parms))
 
-    print()
-    poly_modulus_degree = 16384
-    parms.set_poly_modulus_degree(poly_modulus_degree)
-    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
-    parms.set_plain_modulus(786433)
-    bfv_performance_test(SEALContext.Create(parms))
+    # print()
+    # poly_modulus_degree = 16384
+    # parms.set_poly_modulus_degree(poly_modulus_degree)
+    # parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    # parms.set_plain_modulus(786433)
+    # bfv_performance_test(SEALContext.Create(parms))
 
     # Comment out the following to run the biggest example.
     # poly_modulus_degree = 32768

@@ -1700,6 +1700,7 @@ namespace seal
         auto &coeff_modulus = parms.coeff_modulus();
         size_t coeff_count = parms.poly_modulus_degree();
         size_t coeff_mod_count = coeff_modulus.size();
+        size_t n_poly = encrypted.size();
 
         shared_ptr<UniformRandomGenerator> random(parms.random_generator()->create());
 
@@ -1721,61 +1722,66 @@ namespace seal
             constexpr uint64_t max_random = static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL);
             const size_t each_pack_bit = 63;
 
-            size_t n_rand = (noise_bit - 1) / 63 + 1;
-            int last_bit = noise_bit % 63;
+            size_t n_rand = (noise_bit - 1) / each_pack_bit + 1;
+            int last_bit = noise_bit % each_pack_bit;
             int mid_bit = noise_bit - 1;
             size_t last_pack_bit = mid_bit % each_pack_bit;
 
             uint64_t rand;
 
-            cout << "noise_bit: " << noise_bit << endl;
-
-            vector<uint64_t> multi_mid;
-
-            for (size_t j = 0; j < coeff_mod_count; j++) {
-                uint64_t mid = 1;
-                for (size_t k = 0; k < (mid_bit - 1) / each_pack_bit + 1; k++) 
-                {
-                    uint64_t temp = static_cast<uint64_t>(1) << each_pack_bit;
-                    // temp -= barrett_reduce_64(temp, coeff_modulus[j]);
-                    // temp %= coeff_modulus[j]
-                    mid = multiply_uint_uint_mod(mid, temp, coeff_modulus[j]);
-                    // be neg
-                    mid = coeff_modulus[j].value() - mid;
-                }
-                multi_mid.push_back(mid);
-            }
-
-            for (size_t i = 0; i < coeff_count; i++)
+            for (size_t p = 0; p < n_poly; p++) 
             {
-                vector<uint64_t> multi_rand;
+                auto poly = encrypted.data(p);
 
-                // normal case
-                for (size_t j = 0; j < n_rand - 1; j++) 
-                {
-                    rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
-                    multi_rand.push_back(rand);
-                }
-                // corner case
-                uint64_t max_last_noise = static_cast<uint64_t>(1) << last_bit;
-                do
-                {
-                    rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
-                    rand &= (static_cast<uint64_t>(1) << last_bit) - 1;
-                } while (rand >= max_last_noise);
-                multi_rand.push_back(rand);
+                vector<uint64_t> multi_mid;
 
-                for (size_t j = 0; j < coeff_mod_count; j++)
-                {
-                    uint64_t noise_elem = 1;
-                    for (size_t k = 0; k < n_rand; k++) 
+                for (size_t j = 0; j < coeff_mod_count; j++) {
+                    uint64_t mid = 1;
+                    for (size_t k = 0; k < (mid_bit / each_pack_bit); k++) 
                     {
-                        noise_elem = multiply_uint_uint_mod(noise_elem, multi_rand[k], coeff_modulus[j]);
+                        uint64_t temp = static_cast<uint64_t>(1) << each_pack_bit;
+                        // temp -= barrett_reduce_64(temp, coeff_modulus[j]);
+                        // temp %= coeff_modulus[j]
+                        mid = multiply_uint_uint_mod(mid, temp, coeff_modulus[j]);
+                        // be neg
                     }
-                    // noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
-                    *(encrypted.data() + i + (j * coeff_count)) = add_uint_uint_mod(
-                        *(encrypted.data() + i + (j * coeff_count)),
-                        noise_elem, coeff_modulus[j]);
+                    mid = multiply_uint_uint_mod(mid, static_cast<uint64_t>(1) << (mid_bit % each_pack_bit), coeff_modulus[j]);
+                    mid = coeff_modulus[j].value() - mid;
+                    multi_mid.push_back(mid);
+                }
+
+                for (size_t i = 0; i < coeff_count; i++)
+                {
+                    vector<uint64_t> multi_rand;
+
+                    // normal case
+                    for (size_t j = 0; j < n_rand - 1; j++) 
+                    {
+                        rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
+                        rand &= (static_cast<uint64_t>(1) << each_pack_bit) - 1;
+                        multi_rand.push_back(rand);
+                    }
+                    // corner case
+                    uint64_t max_last_noise = static_cast<uint64_t>(1) << last_bit;
+                    do
+                    {
+                        rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
+                        rand &= (static_cast<uint64_t>(1) << last_bit) - 1;
+                    } while (rand >= max_last_noise);
+                    multi_rand.push_back(rand);
+
+                    for (size_t j = 0; j < coeff_mod_count; j++)
+                    {
+                        uint64_t noise_elem = 1;
+                        for (size_t k = 0; k < n_rand; k++) 
+                        {
+                            noise_elem = multiply_uint_uint_mod(noise_elem, multi_rand[k], coeff_modulus[j]);
+                        }
+                        // noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
+                        *(poly + i + (j * coeff_count)) = add_uint_uint_mod(
+                            *(poly + i + (j * coeff_count)),
+                            noise_elem, coeff_modulus[j]);
+                    }
                 }
             }
             break;
