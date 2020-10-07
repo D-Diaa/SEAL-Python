@@ -14,7 +14,7 @@ def get_rt(qs, t):
         res *= x
     return math.log2(res % t)
 
-def bfv_performance_test(context, noise_bit=350):
+def bfv_performance_test(context, noise_bit):
     print_parameters(context)
 
     parms = context.first_context_data().parms()
@@ -124,6 +124,9 @@ def bfv_performance_test(context, noise_bit=350):
         decryptor.decrypt(encrypted, plain2)
         time_end = time.time()
         time_decrypt_sum += (time_end-time_start)*1000000
+        # batch_encoder.decode(plain2, pod_vector2)
+        # print([x for x in pod_vector][:100])
+        # print([x for x in pod_vector2][:100])
         if plain.to_string() != plain2.to_string():
             raise Exception("Encrypt/decrypt failed. Something is wrong.")
 
@@ -160,7 +163,7 @@ def example_bfv_performance_default():
 
     print()
     poly_modulus_degree = 8192
-    poly_modulus_degree = 16384
+    # poly_modulus_degree = 16384
     t = 65537
     # t = 786433
     print("r_t(q) bit: ", get_rt(CoeffModulus.BFVDefault(poly_modulus_degree), t))
@@ -169,7 +172,7 @@ def example_bfv_performance_default():
     parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
     # parms.set_plain_modulus(786433)
     parms.set_plain_modulus(t)
-    bfv_performance_test(SEALContext.Create(parms))
+    bfv_performance_test(SEALContext.Create(parms), 150)
     print()
 
     # print()

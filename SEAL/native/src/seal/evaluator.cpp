@@ -1714,16 +1714,11 @@ namespace seal
         {
         case scheme_type::BFV:
         {
-            auto coeff_div_plain_modulus = context_data.coeff_div_plain_modulus();
-            auto plain_upper_half_threshold = context_data.plain_upper_half_threshold();
-            auto upper_half_increment = context_data.upper_half_increment();
-
             RandomToStandardAdapter engine(random);
-            constexpr uint64_t max_random = static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL);
             const size_t each_pack_bit = 63;
 
             size_t n_rand = (noise_bit - 1) / each_pack_bit + 1;
-            int last_bit = noise_bit % each_pack_bit;
+            int last_bit = noise_bit % each_pack_bit == 0 ? each_pack_bit : noise_bit % each_pack_bit;
             int mid_bit = noise_bit - 1;
             size_t last_pack_bit = mid_bit % each_pack_bit;
 
@@ -1773,9 +1768,12 @@ namespace seal
                     for (size_t j = 0; j < coeff_mod_count; j++)
                     {
                         uint64_t noise_elem = 1;
+                        uint64_t offset = 1;
                         for (size_t k = 0; k < n_rand; k++) 
                         {
-                            noise_elem = multiply_uint_uint_mod(noise_elem, multi_rand[k], coeff_modulus[j]);
+                            uint64_t temp = multiply_uint_uint_mod(offset, multi_rand[k], coeff_modulus[j]);
+                            offset = multiply_uint_uint_mod(offset, static_cast<uint64_t>(1) << each_pack_bit, coeff_modulus[j]);
+                            noise_elem = add_uint_uint_mod(noise_elem, temp, coeff_modulus[j]);
                         }
                         noise_elem = add_uint_uint_mod(noise_elem, multi_mid[j], coeff_modulus[j]);
                         *(poly + i + (j * coeff_count)) = add_uint_uint_mod( *(poly + i + (j * coeff_count)), noise_elem, coeff_modulus[j]);
