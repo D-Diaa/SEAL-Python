@@ -165,6 +165,7 @@ def example_bfv_performance_default():
     # poly_modulus_degree = 8192
     poly_modulus_degree = 16384
     t = 65537
+    # t = 7340033
     # t = 786433
     print("r_t(q) bit: ", get_rt(CoeffModulus.BFVDefault(poly_modulus_degree), t))
     print("plaintext bit: ", math.log2(t))
@@ -172,7 +173,7 @@ def example_bfv_performance_default():
     parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
     # parms.set_plain_modulus(786433)
     parms.set_plain_modulus(t)
-    bfv_performance_test(SEALContext.Create(parms), 360)
+    bfv_performance_test(SEALContext.Create(parms), 340)
     print()
 
     # print()
