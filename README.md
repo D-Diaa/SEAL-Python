@@ -5,6 +5,11 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
 
+## Special Notes
+
+- This implementation contains noise-flooding to protect the circuit privacy of Homomorphic Encryption
+- This repo is dedicated to [GForce: GPU-Friendly Oblivious and Rapid Neural Network Inference](https://github.com/Lucieno/gforce-public), but it is also welcome for other uses.
+
 
 ## Contents
 
@@ -12,7 +17,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 * [Tests](https://github.com/Huelse/pyseal#tests)
 * [About](https://github.com/Huelse/pyseal#about)
 * [Contributing](https://github.com/Huelse/pyseal#contributing)
-
 
 
 ## Build
